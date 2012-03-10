@@ -45,8 +45,8 @@ $(function() {
           this.hit = function(ev) {
             if (this.hasBomb()) {
               this.el.html("x").addClass("bomb");
-              console.log("BOOOOOOOOOOOOOOM!!!!!!!!!!");
-              
+              alert("BOOOOOOOOOOOOOOM!!!!!!!!!!");
+
             } else {
               this.destroyed = true;
               $(this.el).addClass("destroyed");

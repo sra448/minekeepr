@@ -75,7 +75,7 @@ td { vertical-align: top; }
    ========================================================================== */
 
 html {
-  margin:20px 50px;
+  text-align:center;
 }
 
 #minekeepr a {
@@ -98,6 +98,8 @@ html {
 #minekeepr a.bomb {
   color:#FE57A1;
 }
+
+.
 
 
 
