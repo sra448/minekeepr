@@ -79,9 +79,12 @@ td { vertical-align: top; }
   width:20px;
   height:20px;
   color:#ccc;
+  text-decoration:none;
 }
 
-
+#minekeepr a.destroyed {
+  color:#666;
+}
 
 
 

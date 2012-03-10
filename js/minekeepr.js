@@ -10,39 +10,64 @@ $(function() {
           var x = x,
               y = y,
               playboard = playboard,
-              bomb = false,
+              bomb = false;
 
-              getSurroundingFields = function() {
-                return _(_(_.range(x - 1, x + 2)).inject(function(rows, row_id) {                      
-                  if (row_id >= 0 && row_id < board_width) {
-                    rows.push(_(_.range(y - 1, y + 2)).inject(function(fields, field_id) {
-                      if (field_id >= 0 && field_id < board_width && !(row_id == x && field_id == y)) {
-                        fields.push(playboard.fields[row_id][field_id]);
-                      }
-                      return fields;
-                    }.bind(this), []));
-                  }
-                  return rows;
-                }.bind(this), [])).flatten();
-              };
+          this.destroyed = false;
 
           this.hasBomb = function() {
             return bomb;
-          },
+          };
 
           this.addBomb = function() {
             bomb = true;
-          },
+          };
 
-          this.getValue = function() {
-            return _(getSurroundingFields()).filter(function(item) {
+          this.countSurroundingBombs = function() {
+            return _(this.getSurroundingFields()).filter(function(item) {
               return item.hasBomb();
             }).length;
-          },
+          };
+
+          this.getSurroundingFields = function() {
+            return _(_(_.range(x - 1, x + 2)).inject(function(rows, row_id) {                      
+              if (row_id >= 0 && row_id < board_width) {
+                rows.push(_(_.range(y - 1, y + 2)).inject(function(fields, field_id) {
+                  if (field_id >= 0 && field_id < board_width && !(row_id == x && field_id == y)) {
+                    fields.push(playboard.fields[row_id][field_id]);
+                  }
+                  return fields;
+                }.bind(this), []));
+              }
+              return rows;
+            }.bind(this), [])).flatten();
+          };
+
+          this.hit = function(ev) {
+            if (this.hasBomb()) {
+              console.log("BOOOOOOOOOOOOOOM!!!!!!!!!!");
+            } else {
+              this.destroyed = true;
+              $(this.el).addClass("destroyed");
+
+              if (this.countSurroundingBombs() == 0) {
+                var neighbours = _(this.getSurroundingFields()).filter(function(field) {
+                  return !field.destroyed;
+                });
+
+                _(neighbours).each(function(field) {
+                  field.hit();
+                });
+              }
+            }
+          };
 
           this.render = function() {
-            return $("<a>").html(bomb && "x" || this.getValue() == 0 && "-" || this.getValue());
-          }
+            this.el = $("<a>").attr("id", "field_" + x + "_" + y)
+                              .attr("href", "#")
+                              .html(this.hasBomb() && "x" || this.countSurroundingBombs() == 0 && "-" || this.countSurroundingBombs())
+                              .click(this.hit.bind(this));
+            return this.el;
+          };
 
           return this;
         },
