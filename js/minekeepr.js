@@ -3,8 +3,8 @@ $(function() {
   Minekeepr = {};
   Minekeepr.board = function() {
 
-    var board_width = 10,
-        bombs_count = 10,
+    var board_width = 30,
+        bombs_count = 100,
 
         Field = function(x, y, playboard) {
           var x = x,
@@ -88,8 +88,8 @@ $(function() {
         }.bind(this),
 
         generateBomb = function() {
-          var x = Math.floor(Math.random() * 10),
-              y = Math.floor(Math.random() * 10);
+          var x = Math.floor(Math.random() * board_width),
+              y = Math.floor(Math.random() * board_width);
 
           if (!this.fields[x][y].hasBomb()) {
             return this.fields[x][y].addBomb();
