@@ -44,7 +44,9 @@ $(function() {
 
           this.hit = function(ev) {
             if (this.hasBomb()) {
+              this.el.html("x").addClass("bomb");
               console.log("BOOOOOOOOOOOOOOM!!!!!!!!!!");
+              
             } else {
               this.destroyed = true;
               $(this.el).addClass("destroyed");
@@ -57,14 +59,15 @@ $(function() {
                 _(neighbours).each(function(field) {
                   field.hit();
                 });
+              } else {
+                this.el.html(this.countSurroundingBombs());
               }
             }
           };
 
           this.render = function() {
-            this.el = $("<a>").attr("id", "field_" + x + "_" + y)
-                              .attr("href", "#")
-                              .html(this.hasBomb() && "x" || this.countSurroundingBombs() == 0 && "-" || this.countSurroundingBombs())
+            this.el = $("<a>").attr("href", "#")
+                              .html("-")
                               .click(this.hit.bind(this));
             return this.el;
           };

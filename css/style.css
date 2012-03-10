@@ -74,7 +74,12 @@ td { vertical-align: top; }
    Author:
    ========================================================================== */
 
+html {
+  margin:20px 50px;
+}
+
 #minekeepr a {
+  text-align:center;
   display:inline-block;
   width:20px;
   height:20px;
@@ -82,8 +87,16 @@ td { vertical-align: top; }
   text-decoration:none;
 }
 
+#minekeepr a:hover {
+  background-color: #444;
+}
+
 #minekeepr a.destroyed {
   color:#666;
+}
+
+#minekeepr a.bomb {
+  color:#FE57A1;
 }
 
 
