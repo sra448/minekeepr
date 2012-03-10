@@ -10,7 +10,21 @@ $(function() {
           var x = x,
               y = y,
               playboard = playboard,
-              bomb = false;
+              bomb = false,
+
+              getSurroundingFields = function() {
+                return _(_(_.range(x - 1, x + 2)).inject(function(rows, row_id) {                      
+                  if (row_id >= 0 && row_id < board_width) {
+                    rows.push(_(_.range(y - 1, y + 2)).inject(function(fields, field_id) {
+                      if (field_id >= 0 && field_id < board_width && !(row_id == x && field_id == y)) {
+                        fields.push(playboard.fields[row_id][field_id]);
+                      }
+                      return fields;
+                    }.bind(this), []));
+                  }
+                  return rows;
+                }.bind(this), [])).flatten();
+              };
 
           this.hasBomb = function() {
             return bomb;
@@ -21,12 +35,13 @@ $(function() {
           },
 
           this.getValue = function() {
-            console.log(x, y, playboard);
-            return "-";
+            return _(getSurroundingFields()).filter(function(item) {
+              return item.hasBomb();
+            }).length;
           },
 
           this.render = function() {
-            return $("<a>").html(bomb && "x" || this.getValue());
+            return $("<a>").html(bomb && "x" || this.getValue() == 0 && "-" || this.getValue());
           }
 
           return this;
