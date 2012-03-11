@@ -86,6 +86,7 @@ html {
   color:#fff;
   text-decoration:none;
   cursor: crosshair;
+  margin:0;
 }
 
 #minekeepr a:hover {
@@ -105,7 +106,20 @@ html {
 
 #minekeepr a.exploded {
   color:#FE57A1;
-  cursor: pointer;
+  cursor: crosshair;
+}
+
+#minekeepr a.marked {
+  color:#bada55;
+}
+
+/*#minekeepr a.bomb.exploded {
+  color:#FE57A1;
+}*/
+
+#minekeepr a.exploded:hover {
+  background-color:#222;
+  cursor: crosshair;
 }
 
 

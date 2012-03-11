@@ -41,6 +41,25 @@ $(function() {
       }
     };
 
+    this.markBomb = function() {
+      if (this.marked) {
+        var character = this.destroyed && this.countSurroundingBombs() > 0 && this.countSurroundingBombs() || "-";
+        this.marked = false;
+        this.el.removeClass("marked");
+        this.el.html(character);        
+        this.el.on('click', this.hit.bind(this));
+      } else {
+        if (!this.destroyed) {
+          this.marked = true;
+          this.el.addClass("marked");
+          this.el.html("o");
+          this.el.off("click");
+        }
+      }
+
+      return false;
+    };
+
     this.destroy = function() {
       this.destroyed = true;
       $(this.el).addClass("destroyed");
@@ -61,13 +80,17 @@ $(function() {
 
     this.explode = function() {
       this.el.addClass("exploded");
-      if (this.hasBomb) { this.el.html("x"); }
+      if (this.hasBomb) { 
+        this.el.addClass("bomb");
+        this.el.html("x"); 
+      }
+      this.el.off("click");
     };
 
     this.render = function() {
-      this.el = $("<a>").attr("href", "#")
-                        .html("-")
-                        .click(this.hit.bind(this));
+      this.el = $("<a>").html("-")
+                        .on('click', this.hit.bind(this))
+                        .on("contextmenu", this.markBomb.bind(this));
       return this.el;
     };
 
@@ -115,9 +138,10 @@ $(function() {
       }.bind(this));
 
       if (i < board_width) {
+        // TODO: add easing to animation
         setTimeout(function() {
           this.explode(x_center, y_center, i + 1);
-        }.bind(this), 50);
+        }.bind(this), 20);
       }
     };
 
