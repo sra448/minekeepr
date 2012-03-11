@@ -78,6 +78,44 @@ html {
   text-align:center;
 }
 
+header {
+  margin: auto;
+  position: relative;
+  width:618px;
+  padding-bottom:30px;
+  text-align:left;
+  height:55px;
+}
+
+#title {
+  display: block;
+  position: absolute;
+  top:0;
+  left:0;
+}
+
+#clock {
+  display: block;
+  position: absolute;
+  top:0;
+  right:0;
+  font-weight:normal;
+}
+
+footer {
+  margin: auto;
+  position: relative;
+  width:618px;
+  text-align:right;
+  padding-top:30px;
+}
+
+footer a, footer a:link, footer a:visited {
+  text-decoration:none;
+  color:#666;
+  font-size:12px;
+}
+
 #minekeepr a {
   text-align:center;
   display:inline-block;
@@ -85,29 +123,25 @@ html {
   height:18px;
   color:#fff;
   text-decoration:none;
-  cursor: crosshair;
+  cursor: default;
   margin:0;
   padding-bottom:2px;
 }
 
 #minekeepr a:hover {
   background-color: #333;
-  cursor: crosshair;
 }
 
 #minekeepr a.destroyed {
   color:#777;
-  cursor: crosshair;
 }
 
 #minekeepr a.empty {
   color:#444;
-  cursor: crosshair;
 }
 
 #minekeepr a.exploded {
   color:#FE57A1;
-  cursor: crosshair;
 }
 
 #minekeepr a.marked {

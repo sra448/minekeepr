@@ -34,8 +34,13 @@ $(function() {
     };
 
     this.hit = function(ev) {
+      if (board.clockStarted == null) {
+        board.startClock();
+      }
+
       if (this.hasBomb) {
         board.explode(x, y);
+        board.stopClock();
       } else {
         this.destroy();
       }
@@ -145,6 +150,28 @@ $(function() {
           this.explode(x_center, y_center, i + 1);
         }.bind(this), 20);
       }
+    };
+
+    this.snake = function() {
+
+    };
+
+    this.startClock = function() {
+      var value = 0;
+
+      $('#clock').html(value);
+      value = value + 1;
+
+      this.clockInverval = setInterval(function() {
+        $('#clock').html(value);
+        value = value + 1;
+      }, 1000);
+
+      this.clockStarted = true;
+    };
+
+    this.stopClock = function() {
+      clearInterval(this.clockInverval);
     };
 
     this.render = function() {
