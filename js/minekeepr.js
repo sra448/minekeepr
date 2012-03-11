@@ -10,13 +10,6 @@ $(function() {
       this.hasBomb = true;
     };
 
-    this.countSurroundingBombs = function() {
-      this.surroundingBombsCount = this.surroundingBombsCount || _(this.getSurroundingFields()).filter(function(item) {
-        return item.hasBomb;
-      }).length;
-      return this.surroundingBombsCount;
-    };
-
     this.getSurroundingFields = function() {
       // TODO: can I do this less complicated?
       this.surroundingFields = this.surroundingFields || _(_(_.range(x - 1, x + 2)).inject(function(rows, row_id) {        
@@ -33,28 +26,35 @@ $(function() {
       return this.surroundingFields;
     };
 
+    this.countSurroundingBombs = function() {
+      this.surroundingBombsCount = this.surroundingBombsCount || _(this.getSurroundingFields()).filter(function(item) {
+        return item.hasBomb;
+      }).length;
+      return this.surroundingBombsCount;
+    };
+
     this.hit = function(ev) {
       if (board.clockStarted == null) {
-        board.startClock();
+        board.startGame();
       }
 
       if (this.hasBomb) {
+        board.stopGame();
         board.explode(x, y);
-        board.stopClock();
       } else {
-        this.destroy();
+        this.expose();
       }
     };
 
     this.markBomb = function() {
       if (this.marked) {
-        var character = this.destroyed && this.countSurroundingBombs() > 0 && this.countSurroundingBombs() || "-";
+        var character = this.exposed && this.countSurroundingBombs() > 0 && this.countSurroundingBombs() || "-";
         this.marked = false;
         this.el.removeClass("marked");
         this.el.html(character);        
         this.el.on('click', this.hit.bind(this));
       } else {
-        if (!this.destroyed) {
+        if (!this.exposed) {
           this.marked = true;
           this.el.addClass("marked");
           this.el.html("o");
@@ -65,21 +65,23 @@ $(function() {
       return false;
     };
 
-    this.destroy = function() {
-      this.destroyed = true;
-      $(this.el).addClass("destroyed");
+    this.expose = function() {
+      this.exposed = true;
+      $(this.el).addClass("exposed");
 
-      if (this.countSurroundingBombs() == 0) {
-        $(this.el).addClass("empty");
-        var neighbours = _(this.getSurroundingFields()).filter(function(field) {
-          return !field.destroyed;
-        });
+      if (!this.hidden) {        
+        if (this.countSurroundingBombs() == 0) {
+          $(this.el).addClass("empty");
+          var neighbours = _(this.getSurroundingFields()).filter(function(field) {
+            return !field.exposed;
+          });
 
-        _(neighbours).each(function(field) {
-          field.hit();
-        });
-      } else {
-        this.el.html(this.countSurroundingBombs());
+          _(neighbours).each(function(field) {
+            field.hit();
+          });
+        } else {
+          this.el.html(this.countSurroundingBombs());
+        }
       }
     };
 
@@ -92,6 +94,15 @@ $(function() {
         this.el.html("-");
       }
       this.el.off("click");
+    };
+
+    this.hide = function() {
+      this.el.addClass("exploded");
+
+      setTimeout(function() {
+        this.hidden = true;
+        this.el.html("#");
+      }.bind(this), 500);
     };
 
     this.render = function() {
@@ -120,16 +131,50 @@ $(function() {
           });
         }.bind(this),
 
-        addRandomBomb = function() {
+        getRandomField = function() {
           var x = Math.floor(Math.random() * board_width),
               y = Math.floor(Math.random() * board_width);
+          return this.fields[x][y];
+        }.bind(this),
 
-          if (!this.fields[x][y].hasBomb) {
-            return this.fields[x][y].addBomb();
+        addRandomBomb = function() {
+          var field = getRandomField();
+          field.hasBomb && addRandomBomb() || field.addBomb();
+        }.bind(this),
+
+        startClock = function() {
+          var value = 999;
+
+          $('#clock').html(value);
+          value = value - 1;
+          this.clockInverval = setInterval(function() {
+            $('#clock').html(value);
+            value = value - 1;
+          }, 100);
+
+          this.clockStarted = true;
+        },
+
+        stopClock = function() {
+          clearInterval(this.clockInverval);
+        },
+
+        startGlitch = function() {          
+          this.glitchInterval = setInterval(hideRandomField, 1000);
+        },
+
+        stopGlitch = function() {
+          clearInterval(this.glitchInterval);
+        },
+
+        hideRandomField = function() {
+          var field = getRandomField();
+          if (field.exposed || field.marked) {
+            hideRandomField();
           } else {
-            return addRandomBomb();
+            field.hide();
           }
-        }.bind(this);
+        };
 
     this.explode = function(x_center, y_center, i) {
       var i = i || 0;
@@ -148,30 +193,21 @@ $(function() {
         // TODO: add easing to animation
         setTimeout(function() {
           this.explode(x_center, y_center, i + 1);
-        }.bind(this), 20);
+        }.bind(this), 10);
       }
     };
 
-    this.snake = function() {
-
+    this.startGame = function() {
+      if (!this.started) {
+        startClock();
+        startGlitch();
+        this.started = true;
+      }
     };
 
-    this.startClock = function() {
-      var value = 0;
-
-      $('#clock').html(value);
-      value = value + 1;
-
-      this.clockInverval = setInterval(function() {
-        $('#clock').html(value);
-        value = value + 1;
-      }, 1000);
-
-      this.clockStarted = true;
-    };
-
-    this.stopClock = function() {
-      clearInterval(this.clockInverval);
+    this.stopGame = function() {
+      stopClock();
+      stopGlitch();
     };
 
     this.render = function() {
