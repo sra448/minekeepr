@@ -87,6 +87,7 @@ html {
   text-decoration:none;
   cursor: crosshair;
   margin:0;
+  padding-bottom:2px;
 }
 
 #minekeepr a:hover {

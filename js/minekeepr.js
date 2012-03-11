@@ -82,7 +82,9 @@ $(function() {
       this.el.addClass("exploded");
       if (this.hasBomb) { 
         this.el.addClass("bomb");
-        this.el.html("x"); 
+        this.el.html("x");
+      } else {
+        this.el.html("-");
       }
       this.el.off("click");
     };
