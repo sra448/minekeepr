@@ -1,102 +1,125 @@
 $(function() {
 
   Minekeepr = {};
-  Minekeepr.board = function() {
 
-    var board_width = 30,
-        bombs_count = 100,
+  Minekeepr.Field = function(x, y, board) {
 
-        Field = function(x, y, playboard) {
-          var x = x,
-              y = y,
-              playboard = playboard,
-              bomb = false;
+    this.hasBomb = false;
 
-          this.destroyed = false;
+    this.addBomb = function() {
+      this.hasBomb = true;
+    };
 
-          this.hasBomb = function() {
-            return bomb;
-          };
+    this.countSurroundingBombs = function() {
+      this.surroundingBombsCount = this.surroundingBombsCount || _(this.getSurroundingFields()).filter(function(item) {
+        return item.hasBomb;
+      }).length;
+      return this.surroundingBombsCount;
+    };
 
-          this.addBomb = function() {
-            bomb = true;
-          };
-
-          this.countSurroundingBombs = function() {
-            return _(this.getSurroundingFields()).filter(function(item) {
-              return item.hasBomb();
-            }).length;
-          };
-
-          this.getSurroundingFields = function() {
-            return _(_(_.range(x - 1, x + 2)).inject(function(rows, row_id) {                      
-              if (row_id >= 0 && row_id < board_width) {
-                rows.push(_(_.range(y - 1, y + 2)).inject(function(fields, field_id) {
-                  if (field_id >= 0 && field_id < board_width && !(row_id == x && field_id == y)) {
-                    fields.push(playboard.fields[row_id][field_id]);
-                  }
-                  return fields;
-                }.bind(this), []));
-              }
-              return rows;
-            }.bind(this), [])).flatten();
-          };
-
-          this.hit = function(ev) {
-            if (this.hasBomb()) {
-              this.el.html("x").addClass("bomb");
-              alert("BOOOOOOOOOOOOOOM!!!!!!!!!!");
-
-            } else {
-              this.destroyed = true;
-              $(this.el).addClass("destroyed");
-
-              if (this.countSurroundingBombs() == 0) {
-                var neighbours = _(this.getSurroundingFields()).filter(function(field) {
-                  return !field.destroyed;
-                });
-
-                _(neighbours).each(function(field) {
-                  field.hit();
-                });
-              } else {
-                this.el.html(this.countSurroundingBombs());
-              }
+    this.getSurroundingFields = function() {
+      // TODO: can I do this less complicated?
+      this.surroundingFields = this.surroundingFields || _(_(_.range(x - 1, x + 2)).inject(function(rows, row_id) {        
+        if (row_id >= 0 && row_id < board.fields.length) {
+          rows.push(_(_.range(y - 1, y + 2)).inject(function(fields, field_id) {
+            if (field_id >= 0 && field_id < board.fields.length && !(row_id == x && field_id == y)) {
+              fields.push(board.fields[row_id][field_id]);
             }
-          };
+            return fields;
+          }.bind(this), []));
+        }
+        return rows;
+      }.bind(this), [])).flatten();
+      return this.surroundingFields;
+    };
 
-          this.render = function() {
-            this.el = $("<a>").attr("href", "#")
-                              .html("-")
-                              .click(this.hit.bind(this));
-            return this.el;
-          };
+    this.hit = function(ev) {
+      if (this.hasBomb) {
+        board.explode(x, y);
+      } else {
+        this.destroy();
+      }
+    };
 
-          return this;
-        },
+    this.destroy = function() {
+      this.destroyed = true;
+      $(this.el).addClass("destroyed");
+
+      if (this.countSurroundingBombs() == 0) {
+        $(this.el).addClass("empty");
+        var neighbours = _(this.getSurroundingFields()).filter(function(field) {
+          return !field.destroyed;
+        });
+
+        _(neighbours).each(function(field) {
+          field.hit();
+        });
+      } else {
+        this.el.html(this.countSurroundingBombs());
+      }
+    };
+
+    this.explode = function() {
+      this.el.addClass("exploded");
+      if (this.hasBomb) { this.el.html("x"); }
+    };
+
+    this.render = function() {
+      this.el = $("<a>").attr("href", "#")
+                        .html("-")
+                        .click(this.hit.bind(this));
+      return this.el;
+    };
+
+    return this;
+  };
+
+  Minekeepr.Board = function(board_width, bombs_count) {
+    var board_width = board_width || 30,
+        bombs_count = bombs_count || 100,
 
         generate = function() {
           this.fields = _.range(board_width).map(function(x) { 
             return _.range(board_width).map(function(y) {
-              return new Field(x, y, this);
+              return new Minekeepr.Field(x, y, this);
             }.bind(this));
           }.bind(this));
 
           _(bombs_count).times(function() {
-            generateBomb();
+            addRandomBomb();
           });
         }.bind(this),
 
-        generateBomb = function() {
+        addRandomBomb = function() {
           var x = Math.floor(Math.random() * board_width),
               y = Math.floor(Math.random() * board_width);
 
-          if (!this.fields[x][y].hasBomb()) {
+          if (!this.fields[x][y].hasBomb) {
             return this.fields[x][y].addBomb();
           } else {
-            return generateBomb();
+            return addRandomBomb();
           }
         }.bind(this);
+
+    this.explode = function(x_center, y_center, i) {
+      var i = i || 0;
+
+      _(_.range(x_center - i, x_center + i)).each(function(x) {
+        if (x >= 0 && x < board_width) {
+          _(_.range(y_center - i, y_center + i)).each(function(y) {
+            if (y >= 0 && y < board_width) {
+              this.fields[x][y].explode();
+            }
+          }.bind(this));
+        }
+      }.bind(this));
+
+      if (i < board_width) {
+        setTimeout(function() {
+          this.explode(x_center, y_center, i + 1);
+        }.bind(this), 50);
+      }
+    };
 
     this.render = function() {
       var element = $("<div>");
@@ -113,12 +136,12 @@ $(function() {
     }.bind(this);
 
     generate();
-
     return this
-
   };
 
-  board = new Minekeepr.board;
+
+  // kickstart
+  board = new Minekeepr.Board;
   $("#minekeepr").html(board.render());
 
 });
