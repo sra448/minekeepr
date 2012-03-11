@@ -54,7 +54,7 @@ $(function() {
         this.el.html(character);        
         this.el.on('click', this.hit.bind(this));
       } else {
-        if (!this.exposed) {
+        if (!this.exposed && !this.hidden) {
           this.marked = true;
           this.el.addClass("marked");
           this.el.html("o");
