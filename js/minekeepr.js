@@ -11,18 +11,15 @@ $(function() {
     };
 
     this.getSurroundingFields = function() {
-      // TODO: can I do this less complicated?
-      this.surroundingFields = this.surroundingFields || _(_(_.range(x - 1, x + 2)).inject(function(rows, row_id) {        
-        if (row_id >= 0 && row_id < board.fields.length) {
-          rows.push(_(_.range(y - 1, y + 2)).inject(function(fields, field_id) {
-            if (field_id >= 0 && field_id < board.fields.length && !(row_id == x && field_id == y)) {
-              fields.push(board.fields[row_id][field_id]);
-            }
-            return fields;
-          }.bind(this), []));
-        }
-        return rows;
-      }.bind(this), [])).flatten();
+      this.surroundingFields = this.surroundingFields || _.chain([y-1, y, y+1])
+          .map(function(rowId) {
+              return _([x-1, x, x+1]).map(function(columnId) {
+                return rowId != y && columnId != x && board.fields[rowId] && board.fields[rowId][columnId] || null;
+              });
+            })
+          .flatten()
+          .compact(function(field) { return field != null; })
+          .value();
       return this.surroundingFields;
     };
 
@@ -200,7 +197,7 @@ $(function() {
     this.startGame = function() {
       if (!this.started) {
         startClock();
-        startGlitch();
+        // startGlitch();
         this.started = true;
       }
     };
